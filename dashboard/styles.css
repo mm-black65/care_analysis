@@ -9,6 +9,9 @@
 
 .stApp {
     background-color: var(--bg-app);
+    background-image: var(--bg-pattern, none);
+    background-repeat: repeat;
+    background-size: 250px 250px;
     color: var(--text-primary);
 }
 
@@ -40,6 +43,41 @@ button[data-baseweb="tab"][aria-selected="true"] {
 
 [data-testid="stMetricValue"] {
     color: var(--text-primary);
+}
+
+
+/* ---------- FORM WIDGETS (date input, selectbox, etc.) ----------
+   Streamlit's widget internals render with their own dark-mode
+   colors by default and ignore .stApp's background. Without these
+   overrides, Light theme leaves dark-on-dark boxes (unreadable
+   text) for every input in the sidebar. */
+
+[data-testid="stDateInput"] input,
+[data-baseweb="input"] input,
+[data-baseweb="base-input"] input,
+[data-baseweb="select"] > div {
+    background-color: var(--input-bg) !important;
+    color: var(--input-text) !important;
+    border-color: var(--input-border) !important;
+}
+
+[data-testid="stDateInput"] svg,
+[data-baseweb="select"] svg {
+    fill: var(--input-text) !important;
+}
+
+/* Dropdown / calendar popovers render in a portal outside the
+   sidebar, so they need their own explicit theme colors too. */
+div[data-baseweb="popover"] div[role="listbox"],
+div[data-baseweb="popover"] ul[role="listbox"],
+div[data-baseweb="calendar"],
+div[data-baseweb="calendar"] * {
+    background-color: var(--bg-card) !important;
+    color: var(--text-primary) !important;
+}
+
+ul[role="listbox"] li:hover {
+    background-color: var(--border-color) !important;
 }
 
 
@@ -185,6 +223,21 @@ button[data-baseweb="tab"][aria-selected="true"] {
 .insight-card.danger  { border-left: 3px solid #ef4444; }
 .insight-card.success { border-left: 3px solid #22c55e; }
 .insight-card.info    { border-left: 3px solid #3b82f6; }
+
+.insight-recommendation {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--border-color);
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text-primary);
+}
+
+.insight-recommendation-label {
+    font-weight: 700;
+    color: var(--accent);
+    margin-right: 4px;
+}
 
 
 /* ---------- STATUS BADGES ---------- */

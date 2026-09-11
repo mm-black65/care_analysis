@@ -5,18 +5,17 @@ import streamlit as st
 
 def render_html(html):
     """
-    Render an HTML string safely inside Streamlit.
+    Render HTML safely inside Streamlit.
 
-    IMPORTANT: st.markdown() runs its input through a Markdown parser
-    before allowing raw HTML through. If the HTML text is indented by
-    4+ spaces (which happens naturally with f-strings written inside
-    indented Python code), Markdown treats it as a *code block* and
-    prints it as literal escaped text instead of rendering it - that
-    is the "raw code showing on the page" bug. textwrap.dedent() strips
-    the common leading whitespace so this can never happen.
+    Removes all leading indentation from HTML lines so Streamlit
+    does not interpret nested HTML as a Markdown code block.
     """
-    st.markdown(textwrap.dedent(html).strip(), unsafe_allow_html=True)
+    html = textwrap.dedent(html).strip()
 
+    # Remove remaining indentation from nested/interpolated HTML
+    html = "\n".join(line.lstrip() for line in html.splitlines())
+
+    st.markdown(html, unsafe_allow_html=True)
 
 def kpi_card(title, value, subtitle="", status=None):
     """Display a dashboard KPI card."""
@@ -52,12 +51,23 @@ def section_header(title, subtitle=None):
         """)
 
 
-def insight_card(title, message, icon="💡", level="info"):
+def insight_card(title, message, icon="💡", level="info", recommendation=None):
     """Display an analytical insight card.
 
     level: one of "info", "success", "warning", "danger" - controls the
     accent color of the left border.
+    recommendation: optional action-oriented follow-up shown beneath the
+    observation, visually separated so it reads as "what to do about it".
     """
+
+    recommendation_html = ""
+
+    if recommendation:
+        recommendation_html = (
+            f'<div class="insight-recommendation">'
+            f'<span class="insight-recommendation-label">Recommendation:</span> '
+            f'{recommendation}</div>'
+        )
 
     render_html(f"""
         <div class="insight-card {level}">
@@ -65,6 +75,7 @@ def insight_card(title, message, icon="💡", level="info"):
             <div>
                 <div class="insight-title">{title}</div>
                 <div class="insight-message">{message}</div>
+                {recommendation_html}
             </div>
         </div>
         """)

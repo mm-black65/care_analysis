@@ -67,21 +67,35 @@ THEMES = {
         "--header-gradient-end": "#0b1120",
         "--header-text": "#ffffff",
         "--header-subtext": "#dbeafe",
+        "--input-bg": "#0f172a",
+        "--input-text": "#f8fafc",
+        "--input-border": "#334155",
     },
-    "Light": {
-        "--bg-app": "#f4f6fb",
-        "--bg-sidebar": "#ffffff",
-        "--bg-card": "#ffffff",
-        "--border-color": "#e2e8f0",
-        "--text-primary": "#0f172a",
-        "--text-secondary": "#475569",
-        "--text-muted": "#94a3b8",
-        "--accent": "#1d4ed8",
-        "--header-gradient-start": "#bfdbfe",
-        "--header-gradient-mid": "#60a5fa",
-        "--header-gradient-end": "#f4f6fb",
-        "--header-text": "#0b1120",
-        "--header-subtext": "#1e3a5f",
+    "Cosmic": {
+        "--bg-app": "#0a0a1f",
+        "--bg-sidebar": "#12102b",
+        "--bg-card": "#181435",
+        "--border-color": "#3a2f6e",
+        "--text-primary": "#f3f0ff",
+        "--text-secondary": "#c4b5fd",
+        "--text-muted": "#8b7ec9",
+        "--accent": "#c084fc",
+        "--header-gradient-start": "#1e1147",
+        "--header-gradient-mid": "#8b5cf6",
+        "--header-gradient-end": "#0a0a1f",
+        "--header-text": "#ffffff",
+        "--header-subtext": "#e9d5ff",
+        "--input-bg": "#1a1640",
+        "--input-text": "#f3f0ff",
+        "--input-border": "#4c3a8c",
+        "--bg-pattern": (
+            "radial-gradient(1.5px 1.5px at 20px 30px, #ffffff77, transparent), "
+            "radial-gradient(2px 2px at 140px 80px, #ffffff55, transparent), "
+            "radial-gradient(1.2px 1.2px at 90px 160px, #ffffff44, transparent), "
+            "radial-gradient(1.8px 1.8px at 200px 220px, #ffffff66, transparent), "
+            "radial-gradient(1.2px 1.2px at 50px 200px, #ffffff44, transparent), "
+            "radial-gradient(1.5px 1.5px at 230px 40px, #ffffff55, transparent)"
+        ),
     },
 }
 
@@ -192,6 +206,18 @@ with st.sidebar:
         <div class="sidebar-brand-subtitle">UAC Program Analytics</div>
         """)
 
+    st.markdown("### Theme")
+
+    theme_choice = st.radio(
+        "Appearance",
+        list(THEMES.keys()),
+        key="theme_choice",
+        horizontal=True,
+        label_visibility="collapsed"
+    )
+
+    st.markdown("---")
+
     st.markdown("### Dashboard Controls")
 
     date_range = st.date_input(
@@ -227,18 +253,6 @@ with st.sidebar:
         "Trend Metric",
         METRIC_OPTIONS,
         key="chart_metric_filter"
-    )
-
-    st.markdown("---")
-
-    st.markdown("### Theme")
-
-    theme_choice = st.radio(
-        "Appearance",
-        list(THEMES.keys()),
-        key="theme_choice",
-        horizontal=True,
-        label_visibility="collapsed"
     )
 
     st.markdown("---")
@@ -416,12 +430,17 @@ with tabs[0]:
 
         fig.update_layout(
             title="Aggregate Care Pipeline",
-            template="plotly_dark" if theme_choice == "Dark" else "plotly_white",
+            template="plotly_dark",
             height=420,
             margin=dict(l=20, r=20, t=60, b=20)
         )
 
         st.plotly_chart(fig, use_container_width=True)
+
+        st.caption(
+            "📌 Each stage narrows compared to the one before it — a bigger drop "
+            "between two stages means more attrition happens there."
+        )
 
     # ---------- ACTIVITY ----------
 
@@ -468,13 +487,18 @@ with tabs[0]:
 
         fig.update_layout(
             title="Monthly Care Activity",
-            template="plotly_dark" if theme_choice == "Dark" else "plotly_white",
+            template="plotly_dark",
             height=420,
             hovermode="x unified",
             margin=dict(l=20, r=20, t=60, b=20)
         )
 
         st.plotly_chart(fig, use_container_width=True)
+
+        st.caption(
+            "📌 Lines moving together mean the pipeline is keeping pace; "
+            "lines pulling apart signal a bottleneck forming at that stage."
+        )
 
     # ---------- PRESSURE ----------
 
@@ -511,13 +535,18 @@ with tabs[0]:
     fig.add_hline(y=0, line_width=1)
 
     fig.update_layout(
-        template="plotly_dark" if theme_choice == "Dark" else "plotly_white",
+        template="plotly_dark",
         height=360,
         barmode="group",
         hovermode="x unified"
     )
 
     st.plotly_chart(fig, use_container_width=True)
+
+    st.caption(
+        "📌 Bars above zero mean intake is outpacing outflow at that stage; "
+        "bars below zero mean the pipeline is clearing faster than it fills."
+    )
 
     # ---------- FILTERED DATASET (lives only on Overview) ----------
 
@@ -579,7 +608,8 @@ with tabs[1]:
                 x=filtered_df["date"],
                 y=filtered_df["cbp_custody"],
                 mode="lines",
-                name="CBP Custody"
+                name="CBP Custody",
+                line=dict(color="#38bdf8")
             )
         )
 
@@ -588,18 +618,24 @@ with tabs[1]:
                 x=filtered_df["date"],
                 y=filtered_df["transferred"],
                 mode="lines",
-                name="Transferred"
+                name="Transferred",
+                line=dict(color="#f59e0b")
             )
         )
 
         fig.update_layout(
             title="CBP Custody vs Transfers",
-            template="plotly_dark" if theme_choice == "Dark" else "plotly_white",
+            template="plotly_dark",
             height=400,
             hovermode="x unified"
         )
 
         st.plotly_chart(fig, use_container_width=True)
+
+        st.caption(
+            "📌 A widening gap between the two lines means children are "
+            "entering custody faster than they're being transferred out."
+        )
 
     with col2:
 
@@ -610,19 +646,72 @@ with tabs[1]:
                 x=filtered_df["date"],
                 y=filtered_df["transfer_efficiency"] * 100,
                 mode="lines",
-                name="Transfer Efficiency"
+                name="Transfer Efficiency",
+                line=dict(color="#34d399")
             )
         )
 
         fig.update_layout(
             title="Transfer Efficiency Trend",
             yaxis_title="Efficiency (%)",
-            template="plotly_dark" if theme_choice == "Dark" else "plotly_white",
+            template="plotly_dark",
             height=400,
             hovermode="x unified"
         )
 
         st.plotly_chart(fig, use_container_width=True)
+
+        st.caption(
+            "📌 Higher and steadier is better — dips point to periods where "
+            "transfers out of CBP custody slowed down."
+        )
+
+    # ---------- TRANSFER EFFICIENCY DISTRIBUTION ----------
+
+    chart_container(
+        "Transfer Efficiency Distribution",
+        "Distribution of reporting-period transfer efficiency values"
+    )
+
+    efficiency_data = filtered_df["transfer_efficiency"].dropna() * 100
+
+    if len(efficiency_data) > 0:
+
+        fig = go.Figure()
+
+        fig.add_trace(
+            go.Histogram(
+                x=efficiency_data,
+                nbinsx=25,
+                name="Transfer Efficiency",
+                marker=dict(color="#a78bfa")
+            )
+        )
+
+        fig.update_layout(
+            title="Distribution of Transfer Efficiency",
+            xaxis_title="Transfer Efficiency (%)",
+            yaxis_title="Number of Reporting Periods",
+            template="plotly_dark",
+            height=360,
+            margin=dict(l=20, r=20, t=60, b=20)
+        )
+
+        st.plotly_chart(
+            fig,
+            use_container_width=True,
+            key="transfer_efficiency_distribution"
+        )
+
+        st.caption(
+            "📌 A cluster toward the right means most periods performed well; "
+            "a cluster toward the left signals a persistent efficiency problem."
+        )
+
+    else:
+        st.warning("No transfer efficiency data available for the selected period.")
+
+    # ---------- CBP OPERATIONAL PRESSURE ----------
 
     chart_container("CBP Operational Pressure")
 
@@ -633,19 +722,25 @@ with tabs[1]:
             x=filtered_df["date"],
             y=filtered_df["cbp_net_pressure"],
             mode="lines",
-            name="CBP Net Pressure"
+            name="CBP Net Pressure",
+            line=dict(color="#14b8a6")
         )
     )
 
     fig.add_hline(y=0)
 
     fig.update_layout(
-        template="plotly_dark" if theme_choice == "Dark" else "plotly_white",
+        template="plotly_dark",
         height=350,
         hovermode="x unified"
     )
 
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True, key="cbp_operational_pressure")
+
+    st.caption(
+        "📌 Positive values mean apprehensions are outpacing transfers, building "
+        "custody backlog; negative values mean CBP is clearing custody faster than it fills."
+    )
 
 
 # ============================================================
@@ -670,18 +765,23 @@ with tabs[2]:
                 x=filtered_df["date"],
                 y=filtered_df["hhs_care"],
                 mode="lines",
-                name="Children in HHS Care"
+                name="Children in HHS Care",
+                line=dict(color="#8b5cf6")
             )
         )
 
         fig.update_layout(
             title="Children in HHS Care",
-            template="plotly_dark" if theme_choice == "Dark" else "plotly_white",
+            template="plotly_dark",
             height=400,
             hovermode="x unified"
         )
 
         st.plotly_chart(fig, use_container_width=True)
+
+        st.caption(
+            "📌 Sustained growth here signals rising placement demand on HHS."
+        )
 
     with col2:
 
@@ -692,18 +792,23 @@ with tabs[2]:
                 x=filtered_df["date"],
                 y=filtered_df["discharged"],
                 mode="lines+markers",
-                name="Discharged"
+                name="Discharged",
+                line=dict(color="#f59e0b")
             )
         )
 
         fig.update_layout(
             title="Discharge Activity",
-            template="plotly_dark" if theme_choice == "Dark" else "plotly_white",
+            template="plotly_dark",
             height=400,
             hovermode="x unified"
         )
 
         st.plotly_chart(fig, use_container_width=True)
+
+        st.caption(
+            "📌 Should rise and fall in step with the HHS care population on the left."
+        )
 
     fig = go.Figure()
 
@@ -712,19 +817,25 @@ with tabs[2]:
             x=filtered_df["date"],
             y=filtered_df["discharge_effectiveness"] * 100,
             mode="lines",
-            name="Discharge Effectiveness"
+            name="Discharge Effectiveness",
+            line=dict(color="#22c55e")
         )
     )
 
     fig.update_layout(
         title="Discharge Effectiveness Trend",
         yaxis_title="Effectiveness (%)",
-        template="plotly_dark" if theme_choice == "Dark" else "plotly_white",
+        template="plotly_dark",
         height=350,
         hovermode="x unified"
     )
 
     st.plotly_chart(fig, use_container_width=True)
+
+    st.caption(
+        "📌 A declining trend here suggests placement or sponsor-vetting delays "
+        "are slowing discharges relative to the care population."
+    )
 
 
 # ============================================================
@@ -770,7 +881,8 @@ with tabs[3]:
             x=filtered_df["date"],
             y=filtered_df["cbp_net_pressure"],
             mode="lines",
-            name="CBP Pressure"
+            name="CBP Pressure",
+            line=dict(color="#38bdf8")
         )
     )
 
@@ -779,7 +891,8 @@ with tabs[3]:
             x=filtered_df["date"],
             y=filtered_df["hhs_net_pressure"],
             mode="lines",
-            name="HHS Pressure"
+            name="HHS Pressure",
+            line=dict(color="#f59e0b")
         )
     )
 
@@ -787,12 +900,80 @@ with tabs[3]:
 
     fig.update_layout(
         title="CBP and HHS Operational Pressure",
-        template="plotly_dark" if theme_choice == "Dark" else "plotly_white",
+        template="plotly_dark",
         height=430,
         hovermode="x unified"
     )
 
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True, key="bottleneck_pressure_chart")
+
+    st.caption(
+        "📌 Whichever line sits further from zero for longer is the bigger "
+        "current bottleneck — CBP intake or HHS discharge."
+    )
+
+    # ---------- MONTHLY TRANSFER-DISCHARGE GAP ----------
+
+    chart_container(
+        "Monthly Transfer–Discharge Gap",
+        "Positive values indicate more transfers than discharges"
+    )
+
+    gap_monthly = (
+        filtered_df
+        .set_index("date")
+        .resample("ME")[["transferred", "discharged"]]
+        .sum()
+        .reset_index()
+    )
+
+    gap_monthly["net_gap"] = (
+        gap_monthly["transferred"]
+        - gap_monthly["discharged"]
+    )
+
+    if len(gap_monthly) > 0:
+
+        fig = go.Figure()
+
+        fig.add_trace(
+            go.Bar(
+                x=gap_monthly["date"],
+                y=gap_monthly["net_gap"],
+                name="Net Gap",
+                marker=dict(color="#a78bfa")
+            )
+        )
+
+        fig.add_hline(
+            y=0,
+            line_width=1
+        )
+
+        fig.update_layout(
+            title="Monthly Transfer–Discharge Gap",
+            xaxis_title="Month",
+            yaxis_title="Transfers − Discharges",
+            template="plotly_dark",
+            height=380,
+            hovermode="x unified",
+            margin=dict(l=20, r=20, t=60, b=20)
+        )
+
+        st.plotly_chart(
+            fig,
+            use_container_width=True,
+            key="bottleneck_monthly_gap"
+        )
+
+        st.caption(
+            "📌 Positive bars mean more children were transferred into HHS care "
+            "than discharged that month, adding to backlog; negative bars mean "
+            "HHS discharged faster than it received."
+        )
+
+    else:
+        st.warning("No monthly data available for the selected period.")
 
     chart_container("Highest Pressure Reporting Periods")
 
@@ -826,6 +1007,11 @@ with tabs[3]:
 
     st.dataframe(pressure_table, use_container_width=True, hide_index=True)
 
+    st.caption(
+        "📌 Ranked by combined CBP + HHS pressure — these periods would "
+        "benefit most from a root-cause review."
+    )
+
 
 # ============================================================
 # TAB 5 — TEMPORAL
@@ -855,7 +1041,8 @@ with tabs[4]:
             x=monthly["date"],
             y=monthly["transferred"],
             mode="lines+markers",
-            name="Transferred"
+            name="Transferred",
+            line=dict(color="#f59e0b")
         )
     )
 
@@ -864,18 +1051,86 @@ with tabs[4]:
             x=monthly["date"],
             y=monthly["discharged"],
             mode="lines+markers",
-            name="Discharged"
+            name="Discharged",
+            line=dict(color="#34d399")
         )
     )
 
     fig.update_layout(
         title="Monthly Transfers vs Discharges",
-        template="plotly_dark" if theme_choice == "Dark" else "plotly_white",
+        template="plotly_dark",
         height=400,
         hovermode="x unified"
     )
 
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True, key="temporal_monthly_transfers_discharges")
+
+    st.caption(
+        "📌 Recurring gaps between the two lines point to seasonal or cyclical "
+        "capacity mismatches worth planning around."
+    )
+
+    # ---------- MONTHLY TRANSFER-DISCHARGE GAP ----------
+
+    chart_container(
+        "Monthly Transfer–Discharge Gap",
+        "Positive values indicate more transfers than discharges"
+    )
+
+    gap_monthly = (
+        filtered_df
+        .set_index("date")
+        .resample("ME")[["transferred", "discharged"]]
+        .sum()
+        .reset_index()
+    )
+
+    gap_monthly["net_gap"] = (
+        gap_monthly["transferred"]
+        - gap_monthly["discharged"]
+    )
+
+    if len(gap_monthly) > 0:
+
+        fig = go.Figure()
+
+        fig.add_trace(
+            go.Bar(
+                x=gap_monthly["date"],
+                y=gap_monthly["net_gap"],
+                name="Net Gap",
+                marker=dict(color="#818cf8")
+            )
+        )
+
+        fig.add_hline(
+            y=0,
+            line_width=1
+        )
+
+        fig.update_layout(
+            title="Monthly Transfer–Discharge Gap",
+            xaxis_title="Month",
+            yaxis_title="Transfers − Discharges",
+            template="plotly_dark",
+            height=380,
+            hovermode="x unified",
+            margin=dict(l=20, r=20, t=60, b=20)
+        )
+
+        st.plotly_chart(
+            fig,
+            use_container_width=True,
+            key="temporal_monthly_gap"
+        )
+
+        st.caption(
+            "📌 Use this to spot whether backlog is building, shrinking, or "
+            "holding steady over time."
+        )
+
+    else:
+        st.warning("No monthly data available for the selected period.")
 
     yearly = (
         filtered_df
@@ -888,18 +1143,23 @@ with tabs[4]:
 
     fig = go.Figure()
 
-    fig.add_trace(go.Bar(x=yearly["year"], y=yearly["apprehended"], name="Apprehended"))
-    fig.add_trace(go.Bar(x=yearly["year"], y=yearly["transferred"], name="Transferred"))
-    fig.add_trace(go.Bar(x=yearly["year"], y=yearly["discharged"], name="Discharged"))
+    fig.add_trace(go.Bar(x=yearly["year"], y=yearly["apprehended"], name="Apprehended", marker_color="#38bdf8"))
+    fig.add_trace(go.Bar(x=yearly["year"], y=yearly["transferred"], name="Transferred", marker_color="#f59e0b"))
+    fig.add_trace(go.Bar(x=yearly["year"], y=yearly["discharged"], name="Discharged", marker_color="#34d399"))
 
     fig.update_layout(
         title="Year-over-Year Activity",
-        template="plotly_dark" if theme_choice == "Dark" else "plotly_white",
+        template="plotly_dark",
         height=400,
         barmode="group"
     )
 
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True, key="temporal_yearly_activity")
+
+    st.caption(
+        "📌 A shrinking gap between Apprehended and Discharged year over year "
+        "signals improving overall throughput."
+    )
 
     weekday_order = [
         "Monday", "Tuesday", "Wednesday", "Thursday",
@@ -918,17 +1178,22 @@ with tabs[4]:
 
     fig = go.Figure()
 
-    fig.add_trace(go.Bar(x=weekday["day_of_week"], y=weekday["transferred"], name="Average Transfers"))
-    fig.add_trace(go.Bar(x=weekday["day_of_week"], y=weekday["discharged"], name="Average Discharges"))
+    fig.add_trace(go.Bar(x=weekday["day_of_week"], y=weekday["transferred"], name="Average Transfers", marker_color="#a78bfa"))
+    fig.add_trace(go.Bar(x=weekday["day_of_week"], y=weekday["discharged"], name="Average Discharges", marker_color="#22d3ee"))
 
     fig.update_layout(
         title="Average Activity by Reporting Day",
-        template="plotly_dark" if theme_choice == "Dark" else "plotly_white",
+        template="plotly_dark",
         height=400,
         barmode="group"
     )
 
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True, key="temporal_weekday_activity")
+
+    st.caption(
+        "📌 Highlights which reporting days see the most transfer and "
+        "discharge activity — useful for staffing decisions."
+    )
 
 
 # ============================================================
@@ -951,25 +1216,59 @@ with tabs[5]:
 
     transfer_level = "success" if transfer_eff >= 0.75 else "warning" if transfer_eff >= 0.5 else "danger"
 
+    if transfer_level == "success":
+        transfer_recommendation = (
+            "Performance is healthy - maintain current staffing levels and "
+            "transfer protocols, and continue routine monitoring."
+        )
+    elif transfer_level == "warning":
+        transfer_recommendation = (
+            "Efficiency is below target. Review hand-off procedures and staffing "
+            "at CBP custody points to close the gap toward the 75% benchmark."
+        )
+    else:
+        transfer_recommendation = (
+            "Efficiency is significantly below target. Prioritize an operational "
+            "review of transfer capacity and coordination between CBP and HHS."
+        )
+
     insight_card(
         "Transfer Performance",
         f"The aggregate transfer efficiency for the selected period is "
         f"<b>{transfer_eff * 100:.1f}%</b>. This indicator compares total "
         f"transfers with total reported CBP custody observations.",
         icon="🔄",
-        level=transfer_level
+        level=transfer_level,
+        recommendation=transfer_recommendation
     )
 
     # ---------- Insight 2 — Discharge ----------
 
     discharge_level = "success" if discharge_eff >= 0.75 else "warning" if discharge_eff >= 0.5 else "danger"
 
+    if discharge_level == "success":
+        discharge_recommendation = (
+            "Discharge activity is keeping pace with HHS care volume - continue "
+            "current sponsor-placement and case-processing workflows."
+        )
+    elif discharge_level == "warning":
+        discharge_recommendation = (
+            "Discharge pace is trailing HHS care volume. Consider accelerating "
+            "sponsor vetting and placement reviews to reduce time in care."
+        )
+    else:
+        discharge_recommendation = (
+            "Discharge activity is well below intake volume. Recommend an urgent "
+            "review of placement bottlenecks and available bed capacity."
+        )
+
     insight_card(
         "Discharge Activity",
         f"Aggregate discharge effectiveness is <b>{discharge_eff * 100:.1f}%</b>. "
         f"This measures discharge activity relative to reported children in HHS care.",
         icon="🏠",
-        level=discharge_level
+        level=discharge_level,
+        recommendation=discharge_recommendation
     )
 
     # ---------- Insight 3 — CBP Pressure ----------
@@ -981,18 +1280,28 @@ with tabs[5]:
             "selected observations."
         )
         cbp_level = "warning"
+        cbp_recommendation = (
+            "Backlog is building at the CBP stage. Recommend evaluating transfer "
+            "throughput capacity and arranging temporary surge support to relieve "
+            "custody pressure."
+        )
     else:
         cbp_message = (
             "CBP shows non-positive average net pressure, meaning reported "
             "transfers were at or above apprehension activity on average."
         )
         cbp_level = "success"
+        cbp_recommendation = (
+            "Pipeline capacity at the CBP stage is adequate - continue routine "
+            "monitoring, no immediate action needed."
+        )
 
     insight_card(
         "CBP Operational Pressure",
         f"Average CBP net pressure is <b>{avg_cbp:.1f}</b> children. {cbp_message}",
         icon="⚠️",
-        level=cbp_level
+        level=cbp_level,
+        recommendation=cbp_recommendation
     )
 
     # ---------- Insight 4 — HHS Pressure ----------
@@ -1003,18 +1312,28 @@ with tabs[5]:
             "reported discharges during the selected observations."
         )
         hhs_level = "warning"
+        hhs_recommendation = (
+            "Care population is growing faster than discharges. Recommend "
+            "expanding HHS bed capacity or accelerating sponsor placement to "
+            "relieve downstream pressure."
+        )
     else:
         hhs_message = (
             "HHS pressure is non-positive on average, indicating reported "
             "discharge activity was at or above transfers."
         )
         hhs_level = "success"
+        hhs_recommendation = (
+            "Discharge pace is keeping up with inflow - maintain current "
+            "staffing and placement operations."
+        )
 
     insight_card(
         "HHS Operational Pressure",
         f"Average HHS net pressure is <b>{avg_hhs:.1f}</b> children. {hhs_message}",
         icon="🏥",
-        level=hhs_level
+        level=hhs_level,
+        recommendation=hhs_recommendation
     )
 
     # ---------- Methodology ----------

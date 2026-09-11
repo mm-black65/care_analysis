@@ -1,299 +1,327 @@
-# Care Transition Efficiency & Placement Outcome Analytics
+# UAC Care Transition Efficiency & Placement Outcome Analytics
 
-## Overview
+> A data analytics and interactive dashboard project for monitoring care transitions, operational pressure, discharge activity, and aggregate placement-related outcomes in the Unaccompanied Children (UAC) Program.
 
-The **Care Transition Efficiency & Placement Outcome Analytics** project analyzes the operational flow of the Unaccompanied Alien Children (UAC) Program.
+![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
+![Streamlit](https://img.shields.io/badge/Dashboard-Streamlit-red)
+![Status](https://img.shields.io/badge/Status-Active-brightgreen)
+![License](https://img.shields.io/badge/License-See%20LICENSE-lightgrey)
 
-The project moves beyond simple monitoring of children in custody by analyzing how children move through different stages of the care pipeline, with particular focus on:
+---
 
-- CBP custody
-- Transfer to HHS care
-- HHS care population
-- Discharge from HHS care
+## 📌 Project Overview
+
+The **UAC Care Transition Efficiency & Placement Outcome Analytics** project analyzes aggregate UAC program reporting data to understand how children move through the care pipeline, from **CBP custody to HHS care and eventual discharge**.
+
+Traditional monitoring often focuses on how many children are currently in custody or care. This project extends that view by analyzing:
+
+- CBP → HHS transfer activity
+- HHS discharge activity
+- Transfer efficiency
+- Discharge effectiveness
+- Pipeline throughput
 - Operational pressure
-- Transfer and discharge activity
-- Temporal patterns and outcome stability
+- Potential bottleneck periods
+- Monthly and yearly trends
+- Weekday reporting patterns
 
-The objective is to identify patterns, pressure points, and changes in operational activity that can support data-driven decision-making and policy evaluation.
-
----
-
-## Problem Statement
-
-The UAC program involves multiple stages of care:
-
-1. Apprehension and placement in CBP custody
-2. Transfer from CBP custody to HHS care
-3. Medical screening, sheltering, and case management
-4. Discharge from HHS care to vetted sponsors
-
-While aggregate custody counts provide information about the size of the population being served, they do not by themselves explain how efficiently the overall process is operating.
-
-This project therefore focuses on analyzing:
-
-- How transfer activity relates to CBP custody
-- How discharge activity relates to the HHS care population
-- Where operational pressure appears
-- How activity changes over time
-- Whether aggregate outcome indicators remain stable
+The project combines **Python-based data analysis** with an interactive **Streamlit dashboard** designed for operational monitoring and decision support.
 
 ---
 
-## Objectives
+## 🎯 Problem Statement
 
-### Primary Objectives
+The UAC program operates through multiple stages:
 
-- Measure CBP-to-HHS transfer activity
-- Evaluate discharge activity from HHS care
-- Identify operational pressure points
-- Analyze changes in care activity over time
-- Develop meaningful KPIs for the UAC care pipeline
+```
+Apprehension
+     ↓
+CBP Custody
+     ↓
+Transfer to HHS
+     ↓
+HHS Care
+     ↓
+Discharge / Placement
+```
 
-### Secondary Objectives
+Aggregate custody counts provide information about the size of the population, but they do not by themselves show how efficiently children are moving through the pipeline.
 
-- Identify periods of elevated operational pressure
-- Compare yearly and monthly activity
-- Examine reporting-day patterns
-- Provide an interactive dashboard for stakeholders
-- Produce analytical findings suitable for policy and operational review
+This project addresses the following questions:
+
+- How effectively are children being transferred from CBP custody to HHS care?
+- Is HHS discharge activity keeping pace with incoming transfers?
+- During which periods does operational pressure increase?
+- Are transfer and discharge patterns changing over time?
+- Which reporting periods may require closer operational review?
 
 ---
 
-## Dataset
+## 🎯 Objectives
 
-The project uses data from the UAC Program containing the following variables:
+- Measure CBP → HHS transition activity
+- Develop operational efficiency indicators
+- Analyze HHS discharge activity
+- Identify periods of high operational pressure
+- Examine temporal changes in transfers and discharges
+- Monitor aggregate pipeline throughput
+- Build an interactive dashboard for stakeholders
+- Provide actionable analytical insights for program management
 
-| Column | Description |
+---
+
+## 📊 Dataset
+
+The project uses the UAC Program dataset containing aggregate reporting observations from 2023–2025.
+
+### Dataset Columns
+
+| Original Column | Analytical Name | Description |
+|---|---|---|
+| Date | `date` | Reporting date |
+| Children apprehended and placed in CBP custody* | `apprehended` | Children entering CBP custody |
+| Children in CBP custody | `cbp_custody` | Children reported in CBP custody |
+| Children transferred out of CBP custody | `transferred` | Children transferred from CBP |
+| Children in HHS Care | `hhs_care` | Children reported in HHS care |
+| Children discharged from HHS Care | `discharged` | Children discharged from HHS care |
+
+### Dataset Coverage
+
+| Metric | Value |
 |---|---|
-| Date | Reporting date |
-| Apprehended | Children apprehended and placed in CBP custody |
-| CBP Custody | Children in CBP custody |
-| Transferred | Children transferred out of CBP custody |
-| HHS Care | Children in HHS care |
-| Discharged | Children discharged from HHS care |
-
-The original dataset contains reporting observations across the period analyzed in this project.
+| Raw rows | 1,170 |
+| Valid observations | 720 |
+| Blank rows removed | 450 |
+| Date range | January 2023 – December 2025 |
+| Duplicate dates | None |
+| Missing values after cleaning | None |
 
 ---
 
-## Analytical Framework
+## 🔍 What Was Done
 
-The project is divided into seven analytical phases.
+### 1. Data Understanding
 
-### Phase 1 — Data Understanding
+The raw dataset was first examined to understand its structure and quality, including:
 
-Examines:
-
-- Dataset structure
-- Data types
-- Missing values
-- Blank records
+- Dataset dimensions
+- Column names and data types
+- First and last observations
+- Missing-value analysis
+- Completely blank rows
 - Duplicate records
-- Date coverage
-- Reporting frequency
-- Descriptive statistics
-- Distribution of variables
+- Unique dates and date validity
+- Reporting-date gaps
+- Numeric variable distributions and descriptive statistics
+- Day-of-week distribution
+- Monthly and yearly observation coverage
 
-Notebook:
+This step established the reporting structure and identified that the dataset contains irregular observation intervals, meaning missing dates should not automatically be interpreted as zero activity.
 
-`notebooks/01_data_understanding.ipynb`
+### 2. Data Cleaning
 
----
+The raw dataset was cleaned and transformed into an analysis-ready dataset:
 
-### Phase 2 — Data Cleaning
+- Removed completely blank rows
+- Renamed columns to concise analytical names
+- Converted dates into datetime format
+- Removed commas from HHS care values
+- Converted numeric columns to numeric data types
+- Sorted records chronologically
+- Checked duplicate dates
+- Checked negative values
+- Checked logical relationships between variables
+- Validated the final dataset
 
-The raw dataset is prepared for analysis by:
+The cleaned dataset is stored at: `data/processed/uac_cleaned.csv`
 
-- Removing completely blank rows
-- Renaming columns
-- Converting dates
-- Converting numeric fields
-- Removing formatting characters such as commas
-- Checking missing values
-- Checking duplicate dates
-- Checking invalid negative values
-- Checking logical inconsistencies
-- Sorting observations chronologically
+### 3. Exploratory Data Analysis
 
-Output:
+Exploratory analysis was performed to understand the overall behavior of the UAC care pipeline, examining:
 
-`data/processed/uac_cleaned.csv`
-
-Notebook:
-
-`notebooks/02_data_cleaning.ipynb`
-
----
-
-### Phase 3 — Exploratory Data Analysis
-
-Explores the major characteristics and patterns in the dataset.
-
-Analysis includes:
-
-- Descriptive statistics
-- Pipeline population comparison
-- Time-series trends
-- Monthly activity
-- Yearly activity
-- Operational pressure
-- Distributions
+- Average pipeline activity
+- CBP custody trends
+- HHS care population trends
+- Apprehension, transfer, and discharge activity
+- Monthly and yearly averages, and year-over-year changes
+- Variable distributions and outliers
 - Correlations
-- Day-of-week patterns
-- High-pressure reporting periods
+- Day-of-week activity
 
-Notebook:
+Separate visualizations were used for CBP and HHS populations because the scale of HHS care is substantially larger than the CBP custody population.
 
-`notebooks/03_exploratory_analysis.ipynb`
+### 4. Care Pipeline Analysis
+
+The dataset was modeled as a multi-stage operational pipeline:
+
+```
+Apprehension
+     ↓
+CBP Custody
+     ↓
+Transfer
+     ↓
+HHS Care
+     ↓
+Discharge
+```
+
+This allowed the analysis to move beyond simple population counts and examine the relationship between incoming and outgoing activity, focusing on:
+
+- Pipeline entry activity
+- Transfer activity
+- HHS care population
+- Discharge activity
+- Differences between incoming and outgoing activity
+- Overall pipeline movement
+
+### 5. Efficiency & Outcome Analysis
+
+Several operational indicators were developed from the available aggregate data.
+
+**Transfer Efficiency Ratio**
+```
+Transfer Efficiency = Total Transferred / Total CBP Custody
+```
+Provides an aggregate indicator of transfer activity relative to the reported CBP custody population.
+
+**Discharge Effectiveness**
+```
+Discharge Effectiveness = Total Discharged / Total HHS Care
+```
+Measures discharge activity relative to the reported HHS-care population.
+
+**Pipeline Throughput**
+```
+Pipeline Throughput = Total Discharged / Total Apprehended
+```
+Provides an aggregate view of how discharge activity compares with incoming apprehension activity over the analysis period.
+
+**Outcome Stability**
+
+Coefficient of variation was used to evaluate the relative variability of transfer-efficiency and discharge-effectiveness indicators.
+
+### 6. Bottleneck & Operational Pressure Analysis
+
+Operational pressure indicators were created to identify periods where incoming activity exceeded outgoing activity.
+
+**CBP Net Pressure**
+```
+CBP Net Pressure = Apprehended - Transferred
+```
+
+**HHS Net Pressure**
+```
+HHS Net Pressure = Transferred - Discharged
+```
+
+Positive values indicate that incoming activity exceeded outgoing activity during the reporting observation.
+
+The analysis included:
+
+- Pressure trends and cumulative pressure
+- Pressure distributions
+- Highest-pressure reporting periods
+- 75th-percentile pressure thresholds
+- Standardized pressure scores
+- Transfer efficiency versus CBP pressure
+
+These indicators help identify periods that may require additional operational investigation.
+
+> **Note:** Net pressure is an analytical indicator and should not automatically be interpreted as a literal backlog without confirming the precise stock-and-flow definitions of the source reporting system.
+
+### 7. Temporal & Outcome Analysis
+
+The project examined how operational activity changes over time, including:
+
+- Monthly transfer and discharge activity
+- Monthly transfer–discharge gaps
+- Year-over-year comparisons and percentage changes
+- Day-of-week activity
+- Monthly operational pressure
+- Yearly outcome stability
+
+Temporal analysis helps identify persistent changes and periods that may warrant closer review.
 
 ---
 
-### Phase 4 — Care Pipeline Analysis
+## 📈 Key Performance Indicators
 
-Examines how activity moves through the major stages of the UAC care process.
-
-The analysis focuses on:
-
-- Apprehension
-- CBP custody
-- Transfers
-- HHS care
-- Discharges
-
-The objective is to understand the relationship between incoming activity, transfers, care populations, and exits.
-
-Notebook:
-
-`notebooks/04_care_pipeline_analysis.ipynb`
+| KPI | Formula | Purpose |
+|---|---|---|
+| Transfer Efficiency | Transferred ÷ CBP Custody | Measures relative transfer activity |
+| Discharge Effectiveness | Discharged ÷ HHS Care | Measures relative discharge activity |
+| Pipeline Throughput | Discharged ÷ Apprehended | Measures aggregate pipeline output |
+| CBP Net Pressure | Apprehended − Transferred | Indicates CBP operational pressure |
+| HHS Net Pressure | Transferred − Discharged | Indicates HHS operational pressure |
+| Outcome Stability | Coefficient of Variation | Measures variability in efficiency indicators |
 
 ---
 
-### Phase 5 — Efficiency & Outcome Analysis
+## 🖥️ Interactive Dashboard
 
-Key indicators include:
+The project includes an interactive Streamlit dashboard designed for operational monitoring, providing:
 
-#### Transfer Efficiency Ratio
+- Date-range filtering
+- KPI cards
+- Transfer monitoring
+- Discharge monitoring
+- Bottleneck analysis
+- Temporal analysis
+- Operational pressure monitoring
+- Efficiency distributions
+- Efficiency vs. pressure analysis
+- Monthly transfer–discharge gap
+- Automated analytical insights
+- Filtered-data download
+- Dark/light dashboard themes
 
-```text
-Transfer Efficiency =
-Transfers / CBP Custody
-Discharge Effectiveness
-Discharge Effectiveness =
-Discharges / HHS Care
-Pipeline Throughput
-Pipeline Throughput =
-Total Discharges / Total Apprehensions
-Outcome Stability
+### 📸 Dashboard Preview
 
-Stability is examined using variation in the calculated indicators across the observation period.
+Dashboard screenshots are stored in `dashboard/assets/`.
 
-Notebook:
+**Dashboard Overview**
 
-notebooks/05_efficiency_analysis.ipynb
+![Dashboard Overview](dashboard/assets/img_1.png)
 
-Important: These aggregate ratios are operational indicators. They do not directly measure the actual processing time of an individual child or case.
+**Discharges Analysis**
 
-Phase 6 — Bottleneck & Pressure Analysis
+![Discharges Analysis](dashboard/assets/img_2.png)
 
-Operational pressure is evaluated using two derived measures.
+**Insights**
 
-CBP Net Pressure
-CBP Net Pressure =
-Apprehended − Transferred
-HHS Net Pressure
-HHS Net Pressure =
-Transferred − Discharged
+![Insights](dashboard/assets/img_3.png)
 
-The analysis examines:
+### 📊 Dashboard Sections
 
-Daily pressure
-Cumulative pressure
-Pressure distributions
-High-pressure periods
-Pressure thresholds
-Standardized pressure comparisons
+**Overview** — Total apprehensions, transfers, discharges, transfer efficiency, discharge effectiveness, pipeline throughput, monthly care activity, and operational pressure at a glance.
 
-These measures are treated as operational pressure indicators, rather than automatically being interpreted as literal administrative backlogs.
+**Transfers** — Focuses on the CBP → HHS transition: CBP custody vs. transfers, transfer efficiency trend and distribution, CBP operational pressure.
 
-Notebook:
+**Discharges** — Focuses on the HHS discharge stage: HHS care population, discharge activity, discharge effectiveness, discharge trends.
 
-notebooks/06_backlog_bottleneck_analysis.ipynb
+**Bottlenecks** — Highlights potential operational pressure: CBP/HHS net pressure, cumulative pressure, highest-pressure periods, transfer efficiency vs. CBP pressure.
 
-Phase 7 — Temporal & Outcome Analysis
+**Temporal** — Examines changes over time: monthly transfers vs. discharges, transfer–discharge gap, year-over-year activity, weekday activity, monthly operational pressure.
 
-Examines how activity changes across time.
+**Insights** — Management-oriented observations and recommendations based on the analytical indicators.
 
-Analysis includes:
+---
 
-Monthly transfer activity
-Monthly discharge activity
-Year-over-year activity
-Year-over-year percentage changes
-Day-of-week activity
-Monthly operational pressure
-Yearly outcome stability
-Temporal KPI summaries
+## 🛠️ Technology Stack
 
-Notebook:
+| Category | Tools |
+|---|---|
+| Programming | Python, Pandas, NumPy |
+| Visualization | Matplotlib, Seaborn, Plotly |
+| Dashboard | Streamlit |
+| Development | Jupyter Notebook, VS Code, Git / GitHub |
 
-notebooks/07_temporal_outcome_analysis.ipynb
+---
 
-Key Performance Indicators
+## 📁 Project Structure
 
-The dashboard presents the major indicators developed during the analysis.
-
-KPI	Purpose
-Transfer Efficiency Ratio	Measures transfers relative to CBP custody
-Discharge Effectiveness	Measures discharges relative to HHS care
-Pipeline Throughput	Compares total exits with total entries
-CBP Net Pressure	Indicates pressure between apprehension and transfer activity
-HHS Net Pressure	Indicates pressure between transfer and discharge activity
-Outcome Stability	Measures variation in efficiency indicators over time
-Dashboard
-
-The project includes an interactive Streamlit dashboard designed to communicate analytical results to non-technical stakeholders.
-
-Dashboard Sections
-1. Executive Overview
-
-Displays:
-
-Total apprehensions
-Total transfers
-Total discharges
-Transfer efficiency
-Discharge effectiveness
-Pipeline throughput
-2. Care Pipeline
-
-Visualizes activity across the major stages of the care process.
-
-3. Efficiency Analysis
-
-Displays:
-
-Transfer efficiency trends
-Discharge effectiveness trends
-Efficiency distributions
-High- and low-efficiency periods
-4. Pressure & Bottleneck Analysis
-
-Displays:
-
-CBP pressure
-HHS pressure
-Cumulative pressure
-High-pressure periods
-Pressure thresholds
-5. Temporal Analysis
-
-Displays:
-
-Monthly trends
-Yearly comparisons
-Year-over-year changes
-Reporting-day patterns
-Project Structure
+```
 Care-Transition-Analytics/
 │
 ├── data/
@@ -307,7 +335,7 @@ Care-Transition-Analytics/
 ├── notebooks/
 │   ├── 01_data_understanding.ipynb
 │   ├── 02_data_cleaning.ipynb
-│   ├── 03_exploratory_analysis.ipynb
+│   ├── 03_exploratory_data_analysis.ipynb
 │   ├── 04_care_pipeline_analysis.ipynb
 │   ├── 05_efficiency_analysis.ipynb
 │   ├── 06_backlog_bottleneck_analysis.ipynb
@@ -323,7 +351,11 @@ Care-Transition-Analytics/
 ├── dashboard/
 │   ├── app.py
 │   ├── components.py
-│   └── styles.css
+│   ├── styles.css
+│   └── assets/
+│       ├── dashboard_overview.png
+│       ├── transfer_analysis.png
+│       └── bottleneck_analysis.png
 │
 ├── reports/
 │   ├── research_paper.pdf
@@ -334,130 +366,160 @@ Care-Transition-Analytics/
 ├── README.md
 ├── .gitignore
 └── LICENSE
-Technology Stack
-Python
-Pandas — data manipulation
-NumPy — numerical analysis
-Matplotlib — data visualization
-Seaborn — statistical visualization
-Plotly — interactive visualization
-Streamlit — dashboard development
-Jupyter Notebook — analytical workflow
-Git & GitHub — version control
-Installation
+```
+
+---
+
+## 🚀 Installation
 
 Clone the repository:
 
-git clone <your-repository-url>
-cd Care-Transition-Analytics
+```bash
+git clone https://github.com/YOUR_USERNAME/care-transition-analytics.git
+cd care-transition-analytics
+```
 
 Create a virtual environment:
 
+**Windows**
+```bash
 python -m venv .venv
-
-Activate the environment on Windows:
-
 .venv\Scripts\activate
+```
 
-Install the dependencies:
+**macOS / Linux**
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
 
+Install dependencies:
+
+```bash
 pip install -r requirements.txt
-Running the Analysis
+```
 
-Open Jupyter Notebook:
+---
 
+## ▶️ Running the Analysis
+
+Launch Jupyter:
+
+```bash
 jupyter notebook
+```
 
-Run the notebooks in order:
+Then open the notebooks in the following order:
 
-01 → 02 → 03 → 04 → 05 → 06 → 07
+1. `01_data_understanding.ipynb`
+2. `02_data_cleaning.ipynb`
+3. `03_exploratory_data_analysis.ipynb`
+4. `04_care_pipeline_analysis.ipynb`
+5. `05_efficiency_analysis.ipynb`
+6. `06_backlog_bottleneck_analysis.ipynb`
+7. `07_temporal_outcome_analysis.ipynb`
 
-The cleaned dataset generated during Phase 2 is used by the later analysis stages.
+---
 
-Running the Dashboard
+## ▶️ Running the Dashboard
 
 From the project root:
 
+```bash
 streamlit run dashboard/app.py
+```
 
 The dashboard will open in your browser.
 
-Outputs
+---
 
-The project produces three major outputs:
+## 📄 Project Deliverables
 
-1. Analytical Notebooks
+This project produces three major deliverables:
 
-Detailed analysis of the UAC care pipeline.
+### 1. Research Paper
+Documents the problem statement, dataset, methodology, analytical approach, KPIs, findings, limitations, and future improvements.
 
-2. Interactive Dashboard
+📍 `reports/research_paper.pdf`
 
-A stakeholder-oriented Streamlit dashboard for exploring KPIs, trends, efficiency, and operational pressure.
+### 2. Executive Summary
+A stakeholder-focused summary containing key findings, management implications, recommended actions, KPI interpretation, and dashboard decision areas.
 
-3. Reports
-Research paper
-Executive summary
-Analytical figures
-Limitations
+📍 `reports/executive_summary.pdf`
 
-The dataset and analytical approach have several limitations.
+### 3. Interactive Dashboard
+A Streamlit application for exploring pipeline activity, transfer efficiency, discharge effectiveness, operational pressure, temporal trends, and bottleneck indicators.
 
-Aggregate Data
+📍 `dashboard/app.py`
 
-The analysis is based on aggregate reporting data rather than individual case records.
+---
 
-No Individual Processing Time
+## ⚠️ Limitations
 
-The available variables do not directly provide the elapsed time for an individual transfer or discharge.
+The analysis should be interpreted within the limitations of the aggregate dataset.
 
-Therefore, the calculated efficiency ratios should not be interpreted as actual processing-time measurements.
+- **No individual-level processing times** — The dataset does not provide individual-level timestamps connecting apprehension, transfer, and discharge events. Efficiency ratios are therefore operational indicators rather than true processing-time measurements.
+- **Aggregate discharge data** — Discharge activity should not automatically be interpreted as individual-level reunification success, since the dataset does not provide detailed placement outcomes for each child.
+- **Irregular reporting** — Observations are not recorded for every calendar day. Missing dates therefore should not be treated as zero activity.
+- **Pressure ≠ confirmed backlog** — Net pressure identifies periods where incoming activity exceeds outgoing activity, but additional information is required to confirm an actual accumulated backlog.
+- **Uneven weekday coverage** — Weekday comparisons should be interpreted carefully because reporting observations are not evenly distributed across all weekdays.
 
-Placement Interpretation
+---
 
-Discharge activity is analyzed at an aggregate level. It should not automatically be interpreted as individual reunification success unless the underlying data explicitly supports that interpretation.
+## 🔮 Future Improvements
 
-Uneven Reporting Frequency
+Future versions could improve the analytical framework by adding:
 
-The dataset does not contain observations for every calendar day. Missing dates should therefore not automatically be interpreted as zero activity.
+- Individual-level case timelines
+- Transfer and discharge timestamps
+- Actual processing durations
+- Sponsor placement outcomes
+- Reunification success indicators
+- Geographic and facility-level breakdowns
+- Predictive backlog forecasting
+- Time-series forecasting
+- Automated anomaly detection
+- Real-time data integration
+- Automated stakeholder reports
+- Alert notifications for sustained pressure
 
-Stock vs Flow Measures
+With richer data, the project could move from aggregate operational monitoring toward direct measurement and prediction of care-transition performance.
 
-CBP/HHS population values represent custody or care populations, while apprehensions, transfers, and discharges represent activity measures. These should be interpreted separately.
+---
 
-Conclusion
+## 📌 Main Takeaway
 
-The project reframes the UAC dataset from a simple population-monitoring dataset into an operational analytics framework.
+This project demonstrates how aggregate UAC program data can be transformed from simple custody reporting into a care-transition monitoring framework.
 
-By combining pipeline analysis, efficiency indicators, pressure measures, and temporal analysis, the project provides a structured view of how activity changes across the UAC care process.
+```
+Data Cleaning → Exploratory Analysis → Pipeline Modeling →
+Efficiency Metrics → Pressure & Bottleneck Analysis →
+Temporal Analysis → Interactive Dashboard
+```
 
-The resulting dashboard and analytical reports are intended to help stakeholders identify operational patterns, periods of elevated pressure, and changes in aggregate care activity that may warrant further investigation.
+The project provides stakeholders with a structured way to monitor transfers, discharges, operational pressure, pipeline throughput, and changes over time.
 
-Future Improvements
+---
 
-Potential future extensions include:
+## 👤 Author
 
-Incorporating individual-level case data
-Adding actual processing-time measurements
-Adding facility-level analysis
-Including geographic analysis
-Adding demographic outcome analysis where appropriate
-Connecting the dashboard to regularly updated data
-Adding automated reporting
-Developing predictive models if sufficiently detailed longitudinal data becomes available
-Author
-
-Mahi Ahalawat
-
+**Mahi Ahalawat**
 Robotics & AI Engineering Student
 
-License
+**Areas of Interest:** Data Analytics · Machine Learning · Artificial Intelligence · Robotics · Computer Vision · IoT
 
-This project is intended for educational, analytical, and research purposes.
+---
 
+## 📜 License
 
-### One thing I'd change before you put this on GitHub
+This project is available under the license included in the repository.
 
-For the **final GitHub version**, don't leave:
+---
 
-```text
-<your-repository-url>
+## ⭐ Project Summary
+
+**UAC Care Transition Efficiency & Placement Outcome Analytics**
+
+`Dataset → Analysis → KPIs → Bottleneck Detection → Dashboard → Decision Support`
+
+Built using Python, Pandas, NumPy, Plotly, Matplotlib, Seaborn, Streamlit, and Jupyter Notebook.
